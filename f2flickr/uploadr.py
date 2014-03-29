@@ -392,9 +392,25 @@ class Uploadr:
             realTags = re.sub(r'[/\\_.]', ' ',
                           os.path.dirname(folderTag)).strip()
 
+						            if configdict.get('full_folder_tags', 'false').startswith('true'):
+						                realTags = os.path.dirname(folderTag).split(os.sep)
+						                realTags = filter(None, realTags)
+						                datefield = realTags[0]
+						                realTags.append(datefield[0:4])
+						                realTags = (' '.join('"' + item + '"' for item in  realTags))
+
+						            picTags = realTags
+						#            picTags = '#' + folderTag.replace(' ','#') + ' ' + realTags
+						
             if configdict.get('full_folder_tags', 'false').startswith('true'):
                 realTags = os.path.dirname(folderTag).split(os.sep)
-                realTags = (' '.join('"' + item + '"' for item in  realTags))
+                # Remove empty tags
+				realTags = filter(None, realTags)
+                # Assumes date is the first field, and add YYYY as tag
+				datefield = realTags[0]
+                realTags.append(datefield[0:4])
+                #
+				realTags = (' '.join('"' + item + '"' for item in  realTags))
 
             picTags = '#' + folderTag.replace(' ','#') + ' ' + realTags
 
