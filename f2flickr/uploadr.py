@@ -381,7 +381,7 @@ class Uploadr:
             f = open(image, 'rb')
             exiftags = exifread.process_file(f)
             f.close()
-            #print exiftags[XPKEYWORDS]
+            #print exiftags
             #print folderTag
             # make one tag equal to original file path with spaces replaced by
             # # and start it with # (for easier recognition) since space is
@@ -389,30 +389,33 @@ class Uploadr:
 
             # this is needed for later syncing flickr with folders
             # look for / \ _ . and replace them with SPACE to make real Tags
-            realTags = re.sub(r'[/\\_.]', ' ',
-                          os.path.dirname(folderTag)).strip()
+            realTags = re.sub(r'[/\\_.]', ' ', os.path.dirname(folderTag)).strip()
 
-						            if configdict.get('full_folder_tags', 'false').startswith('true'):
-						                realTags = os.path.dirname(folderTag).split(os.sep)
-						                realTags = filter(None, realTags)
-						                datefield = realTags[0]
-						                realTags.append(datefield[0:4])
-						                realTags = (' '.join('"' + item + '"' for item in  realTags))
-
-						            picTags = realTags
-						#            picTags = '#' + folderTag.replace(' ','#') + ' ' + realTags
-						
+            image_date = None
+            image_yyyy = None
+            image_yyyy_mm = None
+            if 'Image DateTime' in exiftags:
+                image_date = exiftags['Image DateTime'].printable
+                # print image_date
+                date_field = re.search('^(\d{4}):(\d{2}):(\d{2})', image_date)
+                if date_field:
+                    image_yyyy = date_field.group(1)
+                    image_yyyy_mm = "%s-%s" % (date_field.group(1), date_field.group(2),)
+		    print image_yyyy
+		    print image_yyyy_mm
+		
             if configdict.get('full_folder_tags', 'false').startswith('true'):
                 realTags = os.path.dirname(folderTag).split(os.sep)
                 # Remove empty tags
-				realTags = filter(None, realTags)
+                realTags = filter(None, realTags)
                 # Assumes date is the first field, and add YYYY as tag
-				datefield = realTags[0]
+                datefield = realTags[0]
                 realTags.append(datefield[0:4])
                 #
-				realTags = (' '.join('"' + item + '"' for item in  realTags))
+                realTags = (' '.join('"' + item + '"' for item in  realTags))
 
-            picTags = '#' + folderTag.replace(' ','#') + ' ' + realTags
+            picTags = realTags
+            #picTags = '#' + folderTag.replace(' ','#') + ' ' + realTags # Do not make a tag of the image path
 
             if exiftags == {}:
                 logging.debug('NO_EXIF_HEADER for %s', image)
